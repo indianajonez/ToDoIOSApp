@@ -8,11 +8,11 @@
 import Foundation
 
 struct TaskModel {
-    let id: Int64
-    let title: String
-    let description: String?
-    let createdAt: Date
-    let isCompleted: Bool
-    let isFromAPI: Bool
+    var id: Int64
+    var title: String
+    var description: String?
+    var createdAt: Date
+    var isCompleted: Bool
+    var isFromAPI: Bool
 }
 

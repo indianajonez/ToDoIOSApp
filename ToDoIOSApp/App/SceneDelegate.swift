@@ -20,6 +20,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         // Создаем стартовый экран через TaskListModuleBuilder
         let taskListModule = TaskListModuleBuilder.build()
         let navigationController = UINavigationController(rootViewController: taskListModule)
+        navigationController.navigationBar.prefersLargeTitles = true
 
         window.rootViewController = navigationController
         self.window = window

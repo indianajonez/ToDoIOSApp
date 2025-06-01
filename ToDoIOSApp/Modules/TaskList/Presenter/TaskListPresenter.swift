@@ -29,6 +29,16 @@ extension TaskListPresenter: TaskListViewOutput {
     func didLongPressTask(_ task: TaskModel) {
         // TBD
     }
+    
+    func didToggleCompletion(for taskID: Int64) {
+        interactor?.toggleTaskCompletion(taskID: taskID)
+    }
+    
+    func filterTasks(by searchText: String) {
+        interactor?.filterTasks(by: searchText)
+    }
+
+
 }
 
 extension TaskListPresenter: TaskListInteractorOutput {
