@@ -8,6 +8,6 @@
 import UIKit
 
 protocol TaskListRouterInput: AnyObject {
-    func navigateToTaskDetail(with task: TaskModel)
     func showTaskActions(for task: TaskModel, from view: UIViewController)
+    func navigateToTaskDetail(for task: TaskModel?)
 }

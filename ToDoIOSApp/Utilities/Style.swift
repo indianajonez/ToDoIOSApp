@@ -9,8 +9,9 @@ import Foundation
 import UIKit
 
 enum AppFont {
-    static let title = UIFont.systemFont(ofSize: 16, weight: .medium)
-    static let body = UIFont.systemFont(ofSize: 12, weight: .regular)
+    static let taskTitle = UIFont.systemFont(ofSize: 34, weight: .bold)
+    static let title = UIFont.systemFont(ofSize: 17, weight: .medium)
+    static let body = UIFont.systemFont(ofSize: 14, weight: .regular)
     static let date = UIFont.systemFont(ofSize: 12, weight: .regular)
 }
 

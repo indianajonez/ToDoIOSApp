@@ -37,6 +37,11 @@ final class TaskListInteractor: TaskListInteractorInput {
 
         output?.didFetchTasks(filtered)
     }
+    
+    func addTask(_ task: TaskModel) {
+        tasks.append(task)
+        output?.didFetchTasks(tasks)
+    }
 }
 
 

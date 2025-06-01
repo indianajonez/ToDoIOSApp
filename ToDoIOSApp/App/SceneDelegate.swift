@@ -15,9 +15,24 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
 
+        // 🎨 Appearance для всей навигации
+        let appearance = UINavigationBar.appearance()
+        appearance.tintColor = AppColor.checkboxYellow // ← Кнопка назад
+
+        appearance.titleTextAttributes = [
+            .foregroundColor: UIColor.label,
+            .font: AppFont.title
+        ]
+
+        appearance.largeTitleTextAttributes = [
+            .foregroundColor: UIColor.label,
+            .font: AppFont.taskTitle
+        ]
+
+        // 🪟 Создание окна
         let window = UIWindow(windowScene: windowScene)
 
-        // Создаем стартовый экран через TaskListModuleBuilder
+        // 📦 Создание стартового экрана через TaskListModuleBuilder
         let taskListModule = TaskListModuleBuilder.build()
         let navigationController = UINavigationController(rootViewController: taskListModule)
         navigationController.navigationBar.prefersLargeTitles = true
@@ -26,6 +41,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         self.window = window
         window.makeKeyAndVisible()
     }
+
 
 
     func sceneDidDisconnect(_ scene: UIScene) {

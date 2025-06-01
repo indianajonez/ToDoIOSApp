@@ -25,6 +25,12 @@ final class TaskListViewController: UIViewController {
         searchBar.micButton.addTarget(self, action: #selector(micTapped), for: .touchUpInside)
         presenter.viewDidLoad()
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        let backItem = UIBarButtonItem()
+        backItem.title = "Назад"
+        navigationItem.backBarButtonItem = backItem
+    }
 
     private func setupUI() {
         

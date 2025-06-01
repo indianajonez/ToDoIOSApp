@@ -11,6 +11,8 @@ final class TaskListPresenter {
     weak var view: TaskListViewInput?
     var interactor: TaskListInteractorInput?
     var router: TaskListRouterInput?
+    
+    private var tasks: [TaskModel] = []
 }
 
 extension TaskListPresenter: TaskListViewOutput {
@@ -19,11 +21,11 @@ extension TaskListPresenter: TaskListViewOutput {
     }
 
     func didSelectTask(_ task: TaskModel) {
-        router?.navigateToTaskDetail(with: task)
+        router?.navigateToTaskDetail(for: task)
     }
 
     func didTapAddTask() {
-        // TBD
+        router?.navigateToTaskDetail(for: nil)
     }
 
     func didLongPressTask(_ task: TaskModel) {
@@ -44,5 +46,18 @@ extension TaskListPresenter: TaskListViewOutput {
 extension TaskListPresenter: TaskListInteractorOutput {
     func didFetchTasks(_ tasks: [TaskModel]) {
         view?.reloadTasks(tasks)
+    }
+}
+
+extension TaskListPresenter: TaskListUpdater {
+    func add(task: TaskModel) {
+        interactor?.addTask(task)
+    }
+
+    func update(task: TaskModel) {
+        if let index = tasks.firstIndex(where: { $0.id == task.id }) {
+            tasks[index] = task
+            view?.reloadTasks(tasks)
+        }
     }
 }
