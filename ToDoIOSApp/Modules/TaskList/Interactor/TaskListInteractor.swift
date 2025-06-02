@@ -42,6 +42,12 @@ final class TaskListInteractor: TaskListInteractorInput {
         tasks.append(task)
         output?.didFetchTasks(tasks)
     }
+    
+    func deleteTask(_ task: TaskModel) {
+        tasks.removeAll { $0.id == task.id }
+        output?.didFetchTasks(tasks)
+    }
+
 }
 
 

@@ -14,5 +14,6 @@ protocol TaskListViewOutput: AnyObject {
     func didLongPressTask(_ task: TaskModel)
     func didToggleCompletion(for taskID: Int64)
     func filterTasks(by searchText: String)
+    func didRequestTaskDeletion(_ task: TaskModel)
 
 }

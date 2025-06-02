@@ -23,7 +23,13 @@ final class TaskListViewController: UIViewController {
         setupUI()
         searchBar.textField.addTarget(self, action: #selector(textChanged), for: .editingChanged)
         searchBar.micButton.addTarget(self, action: #selector(micTapped), for: .touchUpInside)
+        
+        let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
+            tableView.addGestureRecognizer(longPressGesture)
+        
         presenter.viewDidLoad()
+        
+        
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -90,6 +96,34 @@ final class TaskListViewController: UIViewController {
         ])
     }
     
+    @objc private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
+        guard gesture.state == .began else { return }
+
+        let point = gesture.location(in: tableView)
+        if let indexPath = tableView.indexPathForRow(at: point),
+           indexPath.row < tasks.count {
+            let task = tasks[indexPath.row]
+            presenter.didLongPressTask(task)
+        }
+    }
+
+    private func showTaskActionSheet(for task: TaskModel) {
+        let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+
+        alert.addAction(UIAlertAction(title: "Редактировать", style: .default) { _ in
+            self.presenter.didSelectTask(task)
+        })
+
+        alert.addAction(UIAlertAction(title: "Удалить", style: .destructive) { _ in
+            self.presenter.didRequestTaskDeletion(task)
+        })
+
+        alert.addAction(UIAlertAction(title: "Отмена", style: .cancel, handler: nil))
+
+        present(alert, animated: true, completion: nil)
+    }
+
+    
     @objc private func didTapAddTask() {
         presenter.didTapAddTask()
     }
@@ -120,18 +154,70 @@ extension TaskListViewController: UITableViewDataSource, UITableViewDelegate {
         cell.configure(with: task)
         return cell
     }
+    
+    func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath,
+                   point: CGPoint) -> UIContextMenuConfiguration? {
+
+        let task = tasks[indexPath.row]
+
+        return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ in
+            let edit = UIAction(title: "Редактировать", image: UIImage(systemName: "square.and.pencil")) { _ in
+                self.presenter.didSelectTask(task)
+            }
+
+            let share = UIAction(title: "Поделиться", image: UIImage(systemName: "square.and.arrow.up")) { _ in
+                let activity = UIActivityViewController(activityItems: [task.title, task.description ?? ""], applicationActivities: nil)
+                self.present(activity, animated: true)
+            }
+
+            let delete = UIAction(title: "Удалить", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
+                self.presenter.didRequestTaskDeletion(task)
+            }
+
+            return UIMenu(title: "", children: [edit, share, delete])
+        }
+    }
+
 
 }
 
 extension TaskListViewController: TaskListViewInput {
-    func reloadTasks(_ tasks: [TaskModel]) {
-        self.tasks = tasks
-        DispatchQueue.main.async {
-            self.tableView.reloadData()
-            self.taskCountLabel.text = "\(tasks.count) задач"
+    
+    func showTaskActions(for task: TaskModel) {
+        let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
 
-        }
+        alert.addAction(UIAlertAction(title: "Редактировать", style: .default) { _ in
+            self.presenter.didSelectTask(task)
+        })
+
+        alert.addAction(UIAlertAction(title: "Удалить", style: .destructive) { _ in
+            self.presenter.didRequestTaskDeletion(task)
+        })
+
+        alert.addAction(UIAlertAction(title: "Отмена", style: .cancel, handler: nil))
+
+        present(alert, animated: true)
     }
+    
+    func reloadTasks(_ newTasks: [TaskModel]) {
+        let oldTasks = self.tasks
+        self.tasks = newTasks
+
+        let diff = oldTasks.enumerated().compactMap { index, task -> IndexPath? in
+            newTasks.contains(where: { $0.id == task.id }) ? nil : IndexPath(row: index, section: 0)
+        }
+
+        if diff.isEmpty {
+            tableView.reloadData()
+        } else {
+            tableView.performBatchUpdates {
+                tableView.deleteRows(at: diff, with: .automatic)
+            }
+        }
+
+        taskCountLabel.text = "\(newTasks.count) задач"
+    }
+
 }
 
 extension TaskListViewController: TaskTableViewCellDelegate {

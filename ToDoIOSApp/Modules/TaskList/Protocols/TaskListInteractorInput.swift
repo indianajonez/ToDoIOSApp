@@ -12,4 +12,5 @@ protocol TaskListInteractorInput: AnyObject {
     func toggleTaskCompletion(taskID: Int64)
     func filterTasks(by searchText: String)
     func addTask(_ task: TaskModel)
+    func deleteTask(_ task: TaskModel)
 }
