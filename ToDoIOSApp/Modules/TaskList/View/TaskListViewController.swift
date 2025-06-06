@@ -47,6 +47,11 @@ final class TaskListViewController: UIViewController {
         taskCountLabel.translatesAutoresizingMaskIntoConstraints = false
         addTaskButton.translatesAutoresizingMaskIntoConstraints = false
         
+       
+        bottomBar.backgroundColor = view.backgroundColor // или .systemBackground
+
+//        tableView.contentInset.bottom = 60
+        
         taskCountLabel.font = UIFont.systemFont(ofSize: 14, weight: .regular)
         taskCountLabel.textColor = .secondaryLabel
         
@@ -75,9 +80,11 @@ final class TaskListViewController: UIViewController {
             searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             searchBar.heightAnchor.constraint(equalToConstant: 36),
 
-            
+            tableView.bottomAnchor.constraint(equalTo: bottomBar.topAnchor),
+
+
             tableView.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 8),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+           
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             
@@ -166,7 +173,7 @@ extension TaskListViewController: UITableViewDataSource, UITableViewDelegate {
             }
 
             let share = UIAction(title: "Поделиться", image: UIImage(systemName: "square.and.arrow.up")) { _ in
-                let activity = UIActivityViewController(activityItems: [task.title, task.description ?? ""], applicationActivities: nil)
+                let activity = UIActivityViewController(activityItems: [task.title, task.taskDescription ?? ""], applicationActivities: nil)
                 self.present(activity, animated: true)
             }
 

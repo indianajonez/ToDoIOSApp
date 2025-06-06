@@ -11,6 +11,7 @@ final class TaskDetailPresenter: TaskDetailViewOutput {
     weak var view: TaskDetailViewInput?
     weak var listUpdater: TaskListUpdater?
     private var task: TaskModel?
+    var interactor: TaskDetailInteractorInput?
 
     var isNewTask: Bool {
         task == nil
@@ -24,7 +25,7 @@ final class TaskDetailPresenter: TaskDetailViewOutput {
     func viewDidLoad() {
         view?.displayTask(
             title: task?.title ?? "",
-            description: task?.description,
+            description: task?.taskDescription,
             date: task?.createdAt ?? Date()
         )
     }
@@ -35,17 +36,20 @@ final class TaskDetailPresenter: TaskDetailViewOutput {
 
         if var existing = task {
             existing.title = trimmedTitle
-            existing.description = description
+            existing.taskDescription = description
+            existing.isFromAPI = false
+            interactor?.saveTask(existing)
             listUpdater?.update(task: existing)
         } else {
             let newTask = TaskModel(
                 id: Int64(Date().timeIntervalSince1970),
                 title: trimmedTitle,
-                description: description,
+                taskDescription: description,
+                completed: false,
                 createdAt: Date(),
-                isCompleted: false,
                 isFromAPI: false
             )
+            interactor?.saveTask(newTask)
             listUpdater?.add(task: newTask)
         }
     }

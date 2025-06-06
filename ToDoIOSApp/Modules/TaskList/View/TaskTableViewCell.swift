@@ -37,6 +37,13 @@ final class TaskTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
 
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        titleLabel.attributedText = nil
+        descriptionLabel.text = nil
+        dateLabel.text = nil
+    }
+
     private func setupUI() {
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         descriptionLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -76,16 +83,16 @@ final class TaskTableViewCell: UITableViewCell {
         descriptionLabel.font = AppFont.body
         dateLabel.font = AppFont.date
 
-        let textColor = task.isCompleted ? AppColor.textCompleted : AppColor.textActive
+        let textColor = task.completed ? AppColor.textCompleted : AppColor.textActive
         titleLabel.textColor = textColor
         descriptionLabel.textColor = textColor
         dateLabel.textColor = textColor
 
         checkboxButton.setImage(UIImage(
-            named: task.isCompleted ? "checkbox_checked" : "checkbox_unchecked"
+            named: task.completed ? "checkbox_checked" : "checkbox_unchecked"
         )?.withRenderingMode(.alwaysOriginal), for: .normal)
 
-        let attributes: [NSAttributedString.Key: Any] = task.isCompleted
+        let attributes: [NSAttributedString.Key: Any] = task.completed
             ? [
                 .strikethroughStyle: NSUnderlineStyle.single.rawValue,
                 .foregroundColor: textColor
@@ -93,17 +100,17 @@ final class TaskTableViewCell: UITableViewCell {
             : [.foregroundColor: textColor]
 
         titleLabel.attributedText = NSAttributedString(string: task.title, attributes: attributes)
-        descriptionLabel.text = task.description
+        descriptionLabel.text = task.taskDescription
 
         let formatter = DateFormatter()
         formatter.dateFormat = "dd/MM/yy"
         dateLabel.text = formatter.string(from: task.createdAt)
     }
 
+
     @objc private func didTapCheckbox() {
         guard let id = taskID else { return }
         delegate?.didToggleTaskCompletion(taskID: id)
     }
 }
-
 

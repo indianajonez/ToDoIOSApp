@@ -9,7 +9,7 @@ import UIKit
 
 final class TaskDetailViewController: UIViewController, TaskDetailViewInput {
 
-    var presenter: TaskDetailViewOutput!
+    var presenter: TaskDetailViewOutput?
 
     private let scrollView = UIScrollView()
     private let contentView = UIView()
@@ -47,7 +47,7 @@ final class TaskDetailViewController: UIViewController, TaskDetailViewInput {
         super.viewDidLoad()
         setupUI()
         textView.delegate = self
-        presenter.viewDidLoad()
+        presenter?.viewDidLoad()
     }
 
     override func viewDidAppear(_ animated: Bool) {
@@ -63,7 +63,7 @@ final class TaskDetailViewController: UIViewController, TaskDetailViewInput {
 
         let finalDescription = textView.textColor == .tertiaryLabel ? "" : description
 
-        presenter.didUpdateTask(title: title, description: finalDescription)
+        presenter?.didUpdateTask(title: title, description: finalDescription)
     }
 
     private func setupUI() {

@@ -8,15 +8,14 @@
 import Foundation
 
 final class TaskListPresenter {
-    
     weak var view: TaskListViewInput?
     var interactor: TaskListInteractorInput?
     var router: TaskListRouterInput?
-    private var tasks: [TaskModel] = []
+
+    private var currentFilter: String = ""
 }
 
 extension TaskListPresenter: TaskListViewOutput {
-    
     func viewDidLoad() {
         interactor?.fetchTasks()
     }
@@ -32,15 +31,16 @@ extension TaskListPresenter: TaskListViewOutput {
     func didLongPressTask(_ task: TaskModel) {
         view?.showTaskActions(for: task)
     }
-    
+
     func didToggleCompletion(for taskID: Int64) {
         interactor?.toggleTaskCompletion(taskID: taskID)
     }
-    
+
     func filterTasks(by searchText: String) {
+        currentFilter = searchText
         interactor?.filterTasks(by: searchText)
     }
-    
+
     func didRequestTaskDeletion(_ task: TaskModel) {
         interactor?.deleteTask(task)
     }
@@ -58,9 +58,7 @@ extension TaskListPresenter: TaskListUpdater {
     }
 
     func update(task: TaskModel) {
-        if let index = tasks.firstIndex(where: { $0.id == task.id }) {
-            tasks[index] = task
-            view?.reloadTasks(tasks)
-        }
+        interactor?.update(task: task)
     }
 }
+

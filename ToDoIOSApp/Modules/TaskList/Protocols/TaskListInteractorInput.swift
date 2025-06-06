@@ -13,4 +13,5 @@ protocol TaskListInteractorInput: AnyObject {
     func filterTasks(by searchText: String)
     func addTask(_ task: TaskModel)
     func deleteTask(_ task: TaskModel)
+    func update(task: TaskModel) 
 }
