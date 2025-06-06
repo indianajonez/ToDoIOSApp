@@ -1,0 +1,29 @@
+{
+  "configurations" : [
+    {
+      "id" : "75BB7371-D4A9-400C-A523-3E876C79790E",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:ToDoIOSApp.xcodeproj",
+      "identifier" : "F38E12502DEC77CD00992380",
+      "name" : "ToDoIOSApp"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:ToDoIOSApp.xcodeproj",
+        "identifier" : "F3C14B8A2DF3528E00C3FA61",
+        "name" : "ToDoIOSAppTests2"
+      }
+    }
+  ],
+  "version" : 1
+}
