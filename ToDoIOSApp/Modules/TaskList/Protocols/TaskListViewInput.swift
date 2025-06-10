@@ -11,5 +11,3 @@ protocol TaskListViewInput: AnyObject {
     func reloadTasks(_ tasks: [TaskModel])
     func showTaskActions(for task: TaskModel)
 }
-
-

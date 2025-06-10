@@ -10,5 +10,3 @@ import Foundation
 protocol TaskDetailViewInput: AnyObject {
     func displayTask(title: String, description: String?, date: Date)
 }
-
-

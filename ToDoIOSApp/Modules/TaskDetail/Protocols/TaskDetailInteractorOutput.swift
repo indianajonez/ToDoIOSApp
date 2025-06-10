@@ -10,4 +10,3 @@ import Foundation
 protocol TaskDetailInteractorOutput: AnyObject {
     func didSaveTask(_ task: TaskModel)
 }
-

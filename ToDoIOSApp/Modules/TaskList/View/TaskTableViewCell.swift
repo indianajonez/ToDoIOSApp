@@ -15,7 +15,7 @@ final class TaskTableViewCell: UITableViewCell {
 
     weak var delegate: TaskTableViewCellDelegate?
     private var taskID: Int64?
-
+    
     private let checkboxButton: UIButton = {
         let button = UIButton()
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -78,7 +78,6 @@ final class TaskTableViewCell: UITableViewCell {
 
     func configure(with task: TaskModel) {
         taskID = task.id
-
         titleLabel.font = AppFont.title
         descriptionLabel.font = AppFont.body
         dateLabel.font = AppFont.date
@@ -93,7 +92,7 @@ final class TaskTableViewCell: UITableViewCell {
         )?.withRenderingMode(.alwaysOriginal), for: .normal)
 
         let attributes: [NSAttributedString.Key: Any] = task.completed
-            ? [
+        ? [
                 .strikethroughStyle: NSUnderlineStyle.single.rawValue,
                 .foregroundColor: textColor
             ]
@@ -107,10 +106,8 @@ final class TaskTableViewCell: UITableViewCell {
         dateLabel.text = formatter.string(from: task.createdAt)
     }
 
-
     @objc private func didTapCheckbox() {
         guard let id = taskID else { return }
         delegate?.didToggleTaskCompletion(taskID: id)
     }
 }
-

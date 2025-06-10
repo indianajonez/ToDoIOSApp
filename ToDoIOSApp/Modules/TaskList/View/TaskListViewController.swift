@@ -28,8 +28,6 @@ final class TaskListViewController: UIViewController {
             tableView.addGestureRecognizer(longPressGesture)
         
         presenter.viewDidLoad()
-        
-        
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -41,16 +39,13 @@ final class TaskListViewController: UIViewController {
     private func setupUI() {
         
         searchBar.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(searchBar)
-
+        
         bottomBar.translatesAutoresizingMaskIntoConstraints = false
         taskCountLabel.translatesAutoresizingMaskIntoConstraints = false
         addTaskButton.translatesAutoresizingMaskIntoConstraints = false
         
        
-        bottomBar.backgroundColor = view.backgroundColor // или .systemBackground
-
-//        tableView.contentInset.bottom = 60
+        bottomBar.backgroundColor = view.backgroundColor
         
         taskCountLabel.font = UIFont.systemFont(ofSize: 14, weight: .regular)
         taskCountLabel.textColor = .secondaryLabel
@@ -69,9 +64,10 @@ final class TaskListViewController: UIViewController {
         tableView.translatesAutoresizingMaskIntoConstraints = false
 
         view.addSubview(tableView)
+        view.addSubview(searchBar)
+        view.addSubview(bottomBar)
         bottomBar.addSubview(taskCountLabel)
         bottomBar.addSubview(addTaskButton)
-        view.addSubview(bottomBar)
 
         NSLayoutConstraint.activate([
             
@@ -81,31 +77,27 @@ final class TaskListViewController: UIViewController {
             searchBar.heightAnchor.constraint(equalToConstant: 36),
 
             tableView.bottomAnchor.constraint(equalTo: bottomBar.topAnchor),
-
-
             tableView.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 8),
-           
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             
             bottomBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-               bottomBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-               bottomBar.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            bottomBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            bottomBar.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             bottomBar.heightAnchor.constraint(greaterThanOrEqualToConstant: 44),
 
             taskCountLabel.centerXAnchor.constraint(equalTo: bottomBar.centerXAnchor),
-               taskCountLabel.centerYAnchor.constraint(equalTo: bottomBar.centerYAnchor),
+            taskCountLabel.centerYAnchor.constraint(equalTo: bottomBar.centerYAnchor),
             taskCountLabel.topAnchor.constraint(equalTo: bottomBar.topAnchor, constant: 8),
             taskCountLabel.bottomAnchor.constraint(equalTo: bottomBar.bottomAnchor, constant: -8),
 
-               addTaskButton.trailingAnchor.constraint(equalTo: bottomBar.trailingAnchor, constant: -16),
-               addTaskButton.centerYAnchor.constraint(equalTo: bottomBar.centerYAnchor)
+            addTaskButton.trailingAnchor.constraint(equalTo: bottomBar.trailingAnchor, constant: -16),
+            addTaskButton.centerYAnchor.constraint(equalTo: bottomBar.centerYAnchor)
         ])
     }
     
     @objc private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
         guard gesture.state == .began else { return }
-
         let point = gesture.location(in: tableView)
         if let indexPath = tableView.indexPathForRow(at: point),
            indexPath.row < tasks.count {
@@ -184,8 +176,6 @@ extension TaskListViewController: UITableViewDataSource, UITableViewDelegate {
             return UIMenu(title: "", children: [edit, share, delete])
         }
     }
-
-
 }
 
 extension TaskListViewController: TaskListViewInput {
@@ -221,10 +211,8 @@ extension TaskListViewController: TaskListViewInput {
                 tableView.deleteRows(at: diff, with: .automatic)
             }
         }
-
         taskCountLabel.text = "\(newTasks.count) задач"
     }
-
 }
 
 extension TaskListViewController: TaskTableViewCellDelegate {
@@ -232,4 +220,3 @@ extension TaskListViewController: TaskTableViewCellDelegate {
         presenter.didToggleCompletion(for: taskID)
     }
 }
-

@@ -11,11 +11,6 @@ final class SearchBarView: UIView {
 
     let textField = UITextField()
     let micButton = UIButton(type: .system)
-    
-//    override var intrinsicContentSize: CGSize {
-//        return CGSize(width: UIView.noIntrinsicMetric, height: 36)
-//    }
-
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -33,7 +28,6 @@ final class SearchBarView: UIView {
         magnifyingGlass.tintColor = .secondaryLabel
         magnifyingGlass.contentMode = .scaleAspectFit
 
-        // Оборачиваем в UIView с паддингом
         let leftPaddingView = UIView(frame: CGRect(x: 0, y: 0, width: 32, height: 20))
         magnifyingGlass.frame = CGRect(x: 8, y: 0, width: 20, height: 20)
         leftPaddingView.addSubview(magnifyingGlass)
@@ -69,9 +63,6 @@ final class SearchBarView: UIView {
             micButton.centerYAnchor.constraint(equalTo: centerYAnchor),
             micButton.widthAnchor.constraint(equalToConstant: 20),
             micButton.heightAnchor.constraint(equalToConstant: 20),
-
-            
         ])
     }
 }
-

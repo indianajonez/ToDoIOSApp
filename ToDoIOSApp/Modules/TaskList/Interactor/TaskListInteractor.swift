@@ -32,7 +32,7 @@ final class TaskListInteractor: TaskListInteractorInput {
     func addTask(_ task: TaskModel) {
         if isTestingSynchronously {
             saveTask(task)
-            currentFilter = "" // 💡 Сброс фильтра
+            currentFilter = ""
             applyCurrentFilter(sync: true)
         } else {
             DispatchQueue.global(qos: .userInitiated).async {
@@ -106,7 +106,6 @@ final class TaskListInteractor: TaskListInteractorInput {
             let tasks = entities.map { TaskModel(entity: $0) }
 
             if sync {
-                // ⚠️ Безопасная синхронная отправка
                 if Thread.isMainThread {
                     self.output?.didFetchTasks(tasks)
                 } else {
@@ -137,7 +136,6 @@ final class TaskListInteractor: TaskListInteractorInput {
             }
         }
     }
-
 
     private func saveTask(_ task: TaskModel) {
         let context = self.coreDataManager.context

@@ -20,4 +20,3 @@ enum AppColor {
     static let textCompleted = UIColor(hex: "#F4F4F4", alpha: 0.5)
     static let checkboxYellow = UIColor(hex: "#FED702")
 }
-

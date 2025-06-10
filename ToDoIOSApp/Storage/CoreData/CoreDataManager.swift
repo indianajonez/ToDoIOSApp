@@ -10,8 +10,6 @@ import CoreData
 
 final class CoreDataManager {
     static let shared = CoreDataManager()
-
-    // ⚠️ Сделано var, чтобы можно было переопределить в тестах
     var persistentContainer: NSPersistentContainer
 
     private init() {
@@ -53,11 +51,9 @@ extension CoreDataManager {
         }
 
         let container = NSPersistentContainer(name: modelName, managedObjectModel: model)
-
         let description = NSPersistentStoreDescription()
         description.type = NSInMemoryStoreType
         container.persistentStoreDescriptions = [description]
-
         container.loadPersistentStores { _, error in
             if let error = error {
                 fatalError("❌ Не удалось загрузить inMemory хранилище: \(error)")
@@ -65,9 +61,7 @@ extension CoreDataManager {
                 print("✅ In-memory CoreData загружен с моделью: \(modelName)")
             }
         }
-
         instance.persistentContainer = container
         return instance
     }
 }
-

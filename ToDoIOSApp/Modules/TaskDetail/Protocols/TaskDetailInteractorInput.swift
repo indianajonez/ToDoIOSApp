@@ -10,4 +10,3 @@ import Foundation
 protocol TaskDetailInteractorInput: AnyObject {
     func saveTask(_ task: TaskModel)
 }
-

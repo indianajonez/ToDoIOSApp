@@ -58,4 +58,3 @@ struct TaskModel: Identifiable, Equatable {
         self.isFromAPI = true
     }
 }
-

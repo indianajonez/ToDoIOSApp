@@ -61,4 +61,3 @@ extension TaskListPresenter: TaskListUpdater {
         interactor?.update(task: task)
     }
 }
-
