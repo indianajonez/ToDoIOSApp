@@ -7,4 +7,7 @@
 
 import Foundation
 
-protocol TaskDetailRouterInput: AnyObject {}
+protocol TaskDetailRouterInput: AnyObject {
+    func close()
+}
+

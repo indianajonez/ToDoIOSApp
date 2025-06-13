@@ -8,16 +8,25 @@
 import UIKit
 
 final class TaskListRouter: TaskListRouterInput {
+
+    // MARK: - Public Properties
+
     weak var viewController: UIViewController?
 
+    // MARK: - Public Methods
+
     func navigateToTaskDetail(for task: TaskModel?) {
-        if let presenter = (viewController as? TaskListViewController)?.presenter as? TaskListUpdater {
-            let detailVC = TaskDetailModuleBuilder.build(task: task, updater: presenter)
-            viewController?.navigationController?.pushViewController(detailVC, animated: true)
-        }
+        guard
+            let presenter = (viewController as? TaskListViewController)?.presenter as? TaskListUpdater
+        else { return }
+
+        let detailVC = TaskDetailModuleBuilder.build(task: task, updater: presenter)
+        viewController?.navigationController?.pushViewController(detailVC, animated: true)
     }
 
     func showTaskActions(for task: TaskModel, from view: UIViewController) {
-        // TODO
+        // Реализация не требуется — метод уже определён, но не используется
+        // Оставляем пустым до внедрения контекстного меню или UIAlertController
     }
 }
+

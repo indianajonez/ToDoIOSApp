@@ -8,8 +8,13 @@
 import UIKit
 
 final class TaskListViewController: UIViewController {
+
+    // MARK: - Public Properties
+
     var presenter: TaskListViewOutput!
-    
+
+    // MARK: - Private Properties
+
     private var tasks: [TaskModel] = []
     private let tableView = UITableView()
     private let bottomBar = UIView()
@@ -17,70 +22,78 @@ final class TaskListViewController: UIViewController {
     private let addTaskButton = UIButton(type: .system)
     private let searchBar = SearchBarView()
 
+    // MARK: - Lifecycle
+
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "Задачи"
         setupUI()
-        searchBar.textField.addTarget(self, action: #selector(textChanged), for: .editingChanged)
-        searchBar.micButton.addTarget(self, action: #selector(micTapped), for: .touchUpInside)
-        
-        let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
-            tableView.addGestureRecognizer(longPressGesture)
-        
+        configureBindings()
         presenter.viewDidLoad()
     }
-    
+
     override func viewWillAppear(_ animated: Bool) {
-        let backItem = UIBarButtonItem()
-        backItem.title = "Назад"
-        navigationItem.backBarButtonItem = backItem
+        super.viewWillAppear(animated)
+        navigationItem.backBarButtonItem = UIBarButtonItem(title: "Назад", style: .plain, target: nil, action: nil)
     }
 
+    // MARK: - Setup
+
     private func setupUI() {
-        
-        searchBar.translatesAutoresizingMaskIntoConstraints = false
-        
-        bottomBar.translatesAutoresizingMaskIntoConstraints = false
-        taskCountLabel.translatesAutoresizingMaskIntoConstraints = false
-        addTaskButton.translatesAutoresizingMaskIntoConstraints = false
-        
-       
-        bottomBar.backgroundColor = view.backgroundColor
-        
-        taskCountLabel.font = UIFont.systemFont(ofSize: 14, weight: .regular)
-        taskCountLabel.textColor = .secondaryLabel
-        
         view.backgroundColor = .systemBackground
         navigationItem.largeTitleDisplayMode = .always
-        
-        let pencilImage = UIImage(systemName: "square.and.pencil")
-        addTaskButton.setImage(pencilImage, for: .normal)
+
+        setupSearchBar()
+        setupBottomBar()
+        setupTableView()
+        setupLayout()
+    }
+
+    private func setupSearchBar() {
+        searchBar.translatesAutoresizingMaskIntoConstraints = false
+    }
+
+    private func setupBottomBar() {
+        bottomBar.translatesAutoresizingMaskIntoConstraints = false
+        bottomBar.backgroundColor = view.backgroundColor
+
+        taskCountLabel.translatesAutoresizingMaskIntoConstraints = false
+        taskCountLabel.font = .systemFont(ofSize: 14)
+        taskCountLabel.textColor = .secondaryLabel
+
+        addTaskButton.translatesAutoresizingMaskIntoConstraints = false
+        addTaskButton.setImage(UIImage(systemName: "square.and.pencil"), for: .normal)
         addTaskButton.tintColor = UIColor(named: "AccentColor") ?? .systemYellow
         addTaskButton.addTarget(self, action: #selector(didTapAddTask), for: .touchUpInside)
-        
-        tableView.dataSource = self
-        tableView.delegate = self
-        tableView.register(TaskTableViewCell.self, forCellReuseIdentifier: "TaskCell")
-        tableView.translatesAutoresizingMaskIntoConstraints = false
 
-        view.addSubview(tableView)
-        view.addSubview(searchBar)
-        view.addSubview(bottomBar)
         bottomBar.addSubview(taskCountLabel)
         bottomBar.addSubview(addTaskButton)
+    }
+
+    private func setupTableView() {
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.register(TaskTableViewCell.self, forCellReuseIdentifier: "TaskCell")
+        tableView.dataSource = self
+        tableView.delegate = self
+        view.addGestureRecognizer(UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:))))
+    }
+
+    private func setupLayout() {
+        view.addSubview(searchBar)
+        view.addSubview(tableView)
+        view.addSubview(bottomBar)
 
         NSLayoutConstraint.activate([
-            
             searchBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 8),
             searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             searchBar.heightAnchor.constraint(equalToConstant: 36),
 
-            tableView.bottomAnchor.constraint(equalTo: bottomBar.topAnchor),
             tableView.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 8),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            
+            tableView.bottomAnchor.constraint(equalTo: bottomBar.topAnchor),
+
             bottomBar.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             bottomBar.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             bottomBar.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
@@ -95,49 +108,36 @@ final class TaskListViewController: UIViewController {
             addTaskButton.centerYAnchor.constraint(equalTo: bottomBar.centerYAnchor)
         ])
     }
-    
+
+    private func configureBindings() {
+        searchBar.textField.addTarget(self, action: #selector(textChanged), for: .editingChanged)
+        searchBar.micButton.addTarget(self, action: #selector(micTapped), for: .touchUpInside)
+    }
+
+    // MARK: - Actions
+
     @objc private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
         guard gesture.state == .began else { return }
         let point = gesture.location(in: tableView)
-        if let indexPath = tableView.indexPathForRow(at: point),
-           indexPath.row < tasks.count {
-            let task = tasks[indexPath.row]
-            presenter.didLongPressTask(task)
+        if let indexPath = tableView.indexPathForRow(at: point), indexPath.row < tasks.count {
+            presenter.didLongPressTask(tasks[indexPath.row])
         }
     }
 
-    private func showTaskActionSheet(for task: TaskModel) {
-        let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
-
-        alert.addAction(UIAlertAction(title: "Редактировать", style: .default) { _ in
-            self.presenter.didSelectTask(task)
-        })
-
-        alert.addAction(UIAlertAction(title: "Удалить", style: .destructive) { _ in
-            self.presenter.didRequestTaskDeletion(task)
-        })
-
-        alert.addAction(UIAlertAction(title: "Отмена", style: .cancel, handler: nil))
-
-        present(alert, animated: true, completion: nil)
-    }
-
-    
     @objc private func didTapAddTask() {
         presenter.didTapAddTask()
     }
-    
-    @objc private func textChanged(_ sender: UITextField) {
-        let query = sender.text ?? ""
-        presenter.filterTasks(by: query)
+
+    @objc private func textChanged(_ textField: UITextField) {
+        presenter.filterTasks(by: textField.text ?? "")
     }
 
     @objc private func micTapped() {
-        print("Mic tapped")
-        // Будет позже: запуск голосового ввода
+        print("🎤 Mic tapped — голосовой ввод будет позже")
     }
-
 }
+
+// MARK: - UITableViewDataSource & UITableViewDelegate
 
 extension TaskListViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -153,10 +153,8 @@ extension TaskListViewController: UITableViewDataSource, UITableViewDelegate {
         cell.configure(with: task)
         return cell
     }
-    
-    func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath,
-                   point: CGPoint) -> UIContextMenuConfiguration? {
 
+    func tableView(_ tableView: UITableView, contextMenuConfigurationForRowAt indexPath: IndexPath, point: CGPoint) -> UIContextMenuConfiguration? {
         let task = tasks[indexPath.row]
 
         return UIContextMenuConfiguration(identifier: nil, previewProvider: nil) { _ in
@@ -165,8 +163,8 @@ extension TaskListViewController: UITableViewDataSource, UITableViewDelegate {
             }
 
             let share = UIAction(title: "Поделиться", image: UIImage(systemName: "square.and.arrow.up")) { _ in
-                let activity = UIActivityViewController(activityItems: [task.title, task.taskDescription ?? ""], applicationActivities: nil)
-                self.present(activity, animated: true)
+                let activityVC = UIActivityViewController(activityItems: [task.title, task.taskDescription ?? ""], applicationActivities: nil)
+                self.present(activityVC, animated: true)
             }
 
             let delete = UIAction(title: "Удалить", image: UIImage(systemName: "trash"), attributes: .destructive) { _ in
@@ -178,8 +176,15 @@ extension TaskListViewController: UITableViewDataSource, UITableViewDelegate {
     }
 }
 
+// MARK: - TaskListViewInput
+
 extension TaskListViewController: TaskListViewInput {
-    
+    func reloadTasks(_ newTasks: [TaskModel]) {
+        self.tasks = newTasks
+        tableView.reloadData()
+        taskCountLabel.text = "\(newTasks.count) задач"
+    }
+
     func showTaskActions(for task: TaskModel) {
         let alert = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
 
@@ -191,29 +196,13 @@ extension TaskListViewController: TaskListViewInput {
             self.presenter.didRequestTaskDeletion(task)
         })
 
-        alert.addAction(UIAlertAction(title: "Отмена", style: .cancel, handler: nil))
+        alert.addAction(UIAlertAction(title: "Отмена", style: .cancel))
 
         present(alert, animated: true)
     }
-    
-    func reloadTasks(_ newTasks: [TaskModel]) {
-        let oldTasks = self.tasks
-        self.tasks = newTasks
-
-        let diff = oldTasks.enumerated().compactMap { index, task -> IndexPath? in
-            newTasks.contains(where: { $0.id == task.id }) ? nil : IndexPath(row: index, section: 0)
-        }
-
-        if diff.isEmpty {
-            tableView.reloadData()
-        } else {
-            tableView.performBatchUpdates {
-                tableView.deleteRows(at: diff, with: .automatic)
-            }
-        }
-        taskCountLabel.text = "\(newTasks.count) задач"
-    }
 }
+
+// MARK: - TaskTableViewCellDelegate
 
 extension TaskListViewController: TaskTableViewCellDelegate {
     func didToggleTaskCompletion(taskID: Int64) {

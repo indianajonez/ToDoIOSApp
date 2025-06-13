@@ -7,6 +7,8 @@
 
 import Foundation
 
+// MARK: - TodoResponse
+
 struct TodoResponse: Codable {
     let todos: [TodoDTO]
     let total: Int
@@ -14,9 +16,12 @@ struct TodoResponse: Codable {
     let limit: Int
 }
 
+// MARK: - TodoDTO
+
 struct TodoDTO: Codable {
     let id: Int64
     let todo: String
     let completed: Bool
     let userId: Int64
 }
+

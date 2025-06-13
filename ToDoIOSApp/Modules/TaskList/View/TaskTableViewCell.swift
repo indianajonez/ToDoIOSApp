@@ -7,15 +7,22 @@
 
 import UIKit
 
+// MARK: - Protocol
+
 protocol TaskTableViewCellDelegate: AnyObject {
     func didToggleTaskCompletion(taskID: Int64)
 }
 
 final class TaskTableViewCell: UITableViewCell {
 
+    // MARK: - Public Properties
+
     weak var delegate: TaskTableViewCellDelegate?
+
+    // MARK: - Private Properties
+
     private var taskID: Int64?
-    
+
     private let checkboxButton: UIButton = {
         let button = UIButton()
         button.translatesAutoresizingMaskIntoConstraints = false
@@ -28,6 +35,8 @@ final class TaskTableViewCell: UITableViewCell {
     private let descriptionLabel = UILabel()
     private let dateLabel = UILabel()
 
+    // MARK: - Initializers
+
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         setupUI()
@@ -37,12 +46,62 @@ final class TaskTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
 
+    // MARK: - Reuse
+
     override func prepareForReuse() {
         super.prepareForReuse()
+        taskID = nil
         titleLabel.attributedText = nil
         descriptionLabel.text = nil
         dateLabel.text = nil
     }
+
+    // MARK: - Configuration
+
+    func configure(with task: TaskModel) {
+        taskID = task.id
+
+        // Шрифты и цвета
+        titleLabel.font = AppFont.title
+        descriptionLabel.font = AppFont.body
+        dateLabel.font = AppFont.date
+
+        let textColor = task.completed ? AppColor.textCompleted : AppColor.textActive
+        titleLabel.textColor = textColor
+        descriptionLabel.textColor = textColor
+        dateLabel.textColor = textColor
+
+        // Чекбокс
+        let imageName = task.completed ? "checkbox_checked" : "checkbox_unchecked"
+        checkboxButton.setImage(UIImage(named: imageName)?.withRenderingMode(.alwaysOriginal), for: .normal)
+
+        // Заголовок
+        let titleAttributes: [NSAttributedString.Key: Any] = task.completed
+            ? [
+                .strikethroughStyle: NSUnderlineStyle.single.rawValue,
+                .foregroundColor: textColor
+            ]
+            : [.foregroundColor: textColor]
+
+        titleLabel.attributedText = NSAttributedString(string: task.title, attributes: titleAttributes)
+
+        // Описание
+        descriptionLabel.text = task.taskDescription
+
+        // Дата
+        let formatter = DateFormatter()
+        formatter.dateFormat = "dd/MM/yy"
+        dateLabel.text = formatter.string(from: task.createdAt)
+    }
+
+    // MARK: - Actions
+
+    @objc private func didTapCheckbox() {
+        guard let id = taskID else { return }
+        delegate?.didToggleTaskCompletion(taskID: id)
+    }
+
+    // MARK: - UI Setup
 
     private func setupUI() {
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -74,40 +133,5 @@ final class TaskTableViewCell: UITableViewCell {
             dateLabel.topAnchor.constraint(equalTo: descriptionLabel.bottomAnchor, constant: 4),
             dateLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -12)
         ])
-    }
-
-    func configure(with task: TaskModel) {
-        taskID = task.id
-        titleLabel.font = AppFont.title
-        descriptionLabel.font = AppFont.body
-        dateLabel.font = AppFont.date
-
-        let textColor = task.completed ? AppColor.textCompleted : AppColor.textActive
-        titleLabel.textColor = textColor
-        descriptionLabel.textColor = textColor
-        dateLabel.textColor = textColor
-
-        checkboxButton.setImage(UIImage(
-            named: task.completed ? "checkbox_checked" : "checkbox_unchecked"
-        )?.withRenderingMode(.alwaysOriginal), for: .normal)
-
-        let attributes: [NSAttributedString.Key: Any] = task.completed
-        ? [
-                .strikethroughStyle: NSUnderlineStyle.single.rawValue,
-                .foregroundColor: textColor
-            ]
-            : [.foregroundColor: textColor]
-
-        titleLabel.attributedText = NSAttributedString(string: task.title, attributes: attributes)
-        descriptionLabel.text = task.taskDescription
-
-        let formatter = DateFormatter()
-        formatter.dateFormat = "dd/MM/yy"
-        dateLabel.text = formatter.string(from: task.createdAt)
-    }
-
-    @objc private func didTapCheckbox() {
-        guard let id = taskID else { return }
-        delegate?.didToggleTaskCompletion(taskID: id)
     }
 }

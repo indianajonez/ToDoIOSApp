@@ -44,6 +44,18 @@ final class TaskListInteractorTests: XCTestCase {
 
         wait(for: [expectation], timeout: 1.0)
     }
+    
+    func testAddTask_savesToCoreDataStorage() {
+        let task = TaskModel(title: "CoreData Check")
+        sut.addTask(task)
+
+        let request = TaskEntity.fetchRequest()
+        request.predicate = NSPredicate(format: "title == %@", task.title)
+
+        let result = try? coreDataManager.context.fetch(request)
+        XCTAssertEqual(result?.count, 1)
+        XCTAssertEqual(result?.first?.title, task.title)
+    }
 }
 
 final class OutputMock: TaskListInteractorOutput {

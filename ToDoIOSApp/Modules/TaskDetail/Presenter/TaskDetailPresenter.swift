@@ -8,19 +8,29 @@
 import Foundation
 
 final class TaskDetailPresenter: TaskDetailViewOutput {
+
+    // MARK: - Public Properties
+
     weak var view: TaskDetailViewInput?
     weak var listUpdater: TaskListUpdater?
-    private var task: TaskModel?
     var interactor: TaskDetailInteractorInput?
 
     var isNewTask: Bool {
         task == nil
     }
 
+    // MARK: - Private Properties
+
+    private var task: TaskModel?
+
+    // MARK: - Initializer
+
     init(task: TaskModel?, listUpdater: TaskListUpdater?) {
         self.task = task
         self.listUpdater = listUpdater
     }
+
+    // MARK: - Public Methods
 
     func viewDidLoad() {
         view?.displayTask(

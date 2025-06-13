@@ -7,8 +7,10 @@
 
 import Foundation
 
-class MockTodoJSON {
-    
+final class MockTodoJSON {
+
+    // MARK: - Public Static Properties
+
     static let jsonString: String = """
     {
       "todos": [

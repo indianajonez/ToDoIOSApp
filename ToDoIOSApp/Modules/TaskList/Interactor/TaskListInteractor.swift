@@ -7,43 +7,60 @@
 
 import Foundation
 import CoreData
+import os
 
 final class TaskListInteractor: TaskListInteractorInput {
+
+    // MARK: - Public Properties
+
     weak var output: TaskListInteractorOutput?
+
+    // MARK: - Private Properties
+
     private var currentFilter: String = ""
     private let coreDataManager: CoreDataManager
     private let isTestingSynchronously: Bool
+    private let logger = Logger(
+        subsystem: Bundle.main.bundleIdentifier ?? "ToDoIOSApp",
+        category: "TaskListInteractor"
+    )
+
+    // MARK: - Initializer
 
     init(coreDataManager: CoreDataManager = .shared, isTestingSynchronously: Bool = false) {
         self.coreDataManager = coreDataManager
         self.isTestingSynchronously = isTestingSynchronously
     }
 
+    // MARK: - Public Methods
+
     func fetchTasks() {
-        if isTestingSynchronously {
-            applyCurrentFilter(sync: true)
-        } else {
-            DispatchQueue.global(qos: .userInitiated).async {
+        perform {
+            let context = self.coreDataManager.context
+            let request = TaskEntity.fetchRequest()
+
+            do {
+                let count = try context.count(for: request)
+                if count == 0 && !self.isTestingSynchronously {
+                    try self.loadMockTasks()
+                }
                 self.applyCurrentFilter()
+            } catch {
+                self.logger.error("Ошибка загрузки: \(String(describing: error))")
+                self.sendTasks([])
             }
         }
     }
 
     func addTask(_ task: TaskModel) {
-        if isTestingSynchronously {
-            saveTask(task)
-            currentFilter = ""
-            applyCurrentFilter(sync: true)
-        } else {
-            DispatchQueue.global(qos: .userInitiated).async {
-                self.saveTask(task)
-                self.applyCurrentFilter()
-            }
+        perform {
+            self.saveTask(task)
+            self.applyCurrentFilter()
         }
     }
 
     func deleteTask(_ task: TaskModel) {
-        DispatchQueue.global(qos: .userInitiated).async {
+        perform {
             let context = self.coreDataManager.context
             let request = TaskEntity.fetchRequest()
             request.predicate = NSPredicate(format: "id == %d", task.id)
@@ -53,15 +70,15 @@ final class TaskListInteractor: TaskListInteractorInput {
                     context.delete(entity)
                     self.coreDataManager.saveContext()
                 }
-                self.fetchTasks()
+                self.applyCurrentFilter()
             } catch {
-                print("Ошибка удаления: \(error)")
+                self.logger.error("Ошибка удаления: \(String(describing: error))")
             }
         }
     }
 
     func toggleTaskCompletion(taskID: Int64) {
-        DispatchQueue.global(qos: .userInitiated).async {
+        perform {
             let context = self.coreDataManager.context
             let request = TaskEntity.fetchRequest()
             request.predicate = NSPredicate(format: "id == %d", taskID)
@@ -71,83 +88,98 @@ final class TaskListInteractor: TaskListInteractorInput {
                     entity.completed.toggle()
                     self.coreDataManager.saveContext()
                 }
-                self.fetchTasks()
+                self.applyCurrentFilter()
             } catch {
-                print("Ошибка смены статуса: \(error)")
+                self.logger.error("Ошибка смены статуса: \(String(describing: error))")
             }
+        }
+    }
+
+    func update(task: TaskModel) {
+        perform {
+            self.saveTask(task)
+            self.applyCurrentFilter()
         }
     }
 
     func filterTasks(by searchText: String) {
-        currentFilter = searchText
-        applyCurrentFilter()
-    }
-
-    func update(task: TaskModel) {
-        DispatchQueue.global(qos: .userInitiated).async {
-            self.saveTask(task)
-            self.fetchTasks()
+        currentFilter = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        perform {
+            self.applyCurrentFilter()
         }
     }
 
-    private func applyCurrentFilter(sync: Bool = false) {
+    // MARK: - Private Methods
+
+    private func applyCurrentFilter() {
+        let tasks = fetchFilteredTasks()
+        sendTasks(tasks)
+    }
+
+    private func fetchFilteredTasks() -> [TaskModel] {
         let context = self.coreDataManager.context
         let request = TaskEntity.fetchRequest()
 
-        if !currentFilter.isEmpty {
-            request.predicate = NSCompoundPredicate(orPredicateWithSubpredicates: [
-                NSPredicate(format: "title CONTAINS[cd] %@", currentFilter),
-                NSPredicate(format: "taskDescription CONTAINS[cd] %@", currentFilter)
-            ])
-        }
-
         do {
             let entities = try context.fetch(request)
-            let tasks = entities.map { TaskModel(entity: $0) }
+            let models = entities.map { TaskModel(entity: $0) }
 
-            if sync {
-                if Thread.isMainThread {
-                    self.output?.didFetchTasks(tasks)
-                } else {
-                    DispatchQueue.main.sync {
-                        self.output?.didFetchTasks(tasks)
-                    }
-                }
-            } else {
-                DispatchQueue.main.async {
-                    self.output?.didFetchTasks(tasks)
-                }
+            guard !currentFilter.isEmpty else { return models }
+
+            let normalizedFilter = currentFilter
+                .lowercased()
+                .replacingOccurrences(of: " ", with: "")
+
+            return models.filter { task in
+                let title = task.title.lowercased().replacingOccurrences(of: " ", with: "")
+                let desc = task.taskDescription?.lowercased().replacingOccurrences(of: " ", with: "") ?? ""
+                return title.contains(normalizedFilter) || desc.contains(normalizedFilter)
             }
-        } catch {
-            print("Ошибка при фильтрации: \(error)")
 
-            if sync {
-                if Thread.isMainThread {
-                    self.output?.didFetchTasks([])
-                } else {
-                    DispatchQueue.main.sync {
-                        self.output?.didFetchTasks([])
-                    }
-                }
-            } else {
-                DispatchQueue.main.async {
-                    self.output?.didFetchTasks([])
-                }
+        } catch {
+            logger.error("Ошибка при фильтрации: \(String(describing: error))")
+            return []
+        }
+    }
+
+    private func sendTasks(_ tasks: [TaskModel]) {
+        if isTestingSynchronously {
+            output?.didFetchTasks(tasks)
+        } else {
+            DispatchQueue.main.async {
+                self.output?.didFetchTasks(tasks)
             }
         }
     }
 
     private func saveTask(_ task: TaskModel) {
-        let context = self.coreDataManager.context
+        let context = coreDataManager.context
         let request = TaskEntity.fetchRequest()
         request.predicate = NSPredicate(format: "id == %d", task.id)
 
         do {
             let entity = try context.fetch(request).first ?? TaskEntity(context: context)
             entity.update(with: task)
-            self.coreDataManager.saveContext()
+            coreDataManager.saveContext()
         } catch {
-            print("Ошибка сохранения: \(error)")
+            logger.error("Ошибка сохранения: \(String(describing: error))")
+        }
+    }
+
+    private func loadMockTasks() throws {
+        guard let data = MockTodoJSON.jsonString.data(using: .utf8) else { return }
+        let decoded = try JSONDecoder().decode(TodoResponse.self, from: data)
+        decoded.todos.map { TaskModel(dto: $0) }.forEach { saveTask($0) }
+    }
+
+    private func perform(_ block: @escaping () -> Void) {
+        if isTestingSynchronously {
+            block()
+        } else {
+            DispatchQueue.global(qos: .userInitiated).async {
+                block()
+            }
         }
     }
 }
+

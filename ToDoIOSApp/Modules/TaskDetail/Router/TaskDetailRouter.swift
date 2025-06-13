@@ -8,6 +8,15 @@
 import UIKit
 
 final class TaskDetailRouter: TaskDetailRouterInput {
+
+    // MARK: - Public Properties
+
     weak var viewController: UIViewController?
+
+    // MARK: - Public Methods
+
+    func close() {
+        viewController?.navigationController?.popViewController(animated: true)
+    }
 }
 

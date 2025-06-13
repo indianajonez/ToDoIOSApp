@@ -8,8 +8,13 @@
 import Foundation
 
 final class TaskDetailInteractor: TaskDetailInteractorInput {
+
+    // MARK: - Public Properties
+
     weak var output: TaskDetailInteractorOutput?
     var task: TaskModel?
+
+    // MARK: - Public Methods
 
     func didUpdateTask(title: String, description: String?) {
         guard var task = task else { return }
@@ -25,6 +30,8 @@ final class TaskDetailInteractor: TaskDetailInteractorInput {
         }
     }
 
+    // MARK: - Private Methods
+
     func saveTask(_ task: TaskModel) {
         let context = CoreDataManager.shared.context
         let request = TaskEntity.fetchRequest()
@@ -35,7 +42,9 @@ final class TaskDetailInteractor: TaskDetailInteractorInput {
             entity.update(with: task)
             CoreDataManager.shared.saveContext()
         } catch {
-            print("Ошибка при сохранении задачи: \(error)")
+            // Лучше использовать логгер вместо print
+            NSLog("❌ Ошибка при сохранении задачи: \(error.localizedDescription)")
         }
     }
 }
+

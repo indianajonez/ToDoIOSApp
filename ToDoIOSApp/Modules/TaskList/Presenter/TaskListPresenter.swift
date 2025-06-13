@@ -8,12 +8,15 @@
 import Foundation
 
 final class TaskListPresenter {
+
+    // MARK: - Public Properties
+
     weak var view: TaskListViewInput?
     var interactor: TaskListInteractorInput?
     var router: TaskListRouterInput?
-
-    private var currentFilter: String = ""
 }
+
+// MARK: - TaskListViewOutput
 
 extension TaskListPresenter: TaskListViewOutput {
     func viewDidLoad() {
@@ -37,7 +40,6 @@ extension TaskListPresenter: TaskListViewOutput {
     }
 
     func filterTasks(by searchText: String) {
-        currentFilter = searchText
         interactor?.filterTasks(by: searchText)
     }
 
@@ -46,11 +48,15 @@ extension TaskListPresenter: TaskListViewOutput {
     }
 }
 
+// MARK: - TaskListInteractorOutput
+
 extension TaskListPresenter: TaskListInteractorOutput {
     func didFetchTasks(_ tasks: [TaskModel]) {
         view?.reloadTasks(tasks)
     }
 }
+
+// MARK: - TaskListUpdater
 
 extension TaskListPresenter: TaskListUpdater {
     func add(task: TaskModel) {
